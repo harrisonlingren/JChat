@@ -1,8 +1,15 @@
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.Scanner;
+
 import javax.swing.*;
-import java.io.*;
-import java.util.*;
-import java.awt.event.*;
-import java.awt.*;
 
 public class client extends JFrame
 	implements ActionListener {
@@ -12,10 +19,24 @@ public class client extends JFrame
 	private static final int WIDTH = 500;
 	private static final int HEIGHT = 680;
 	
+	private static String user="";
+	
+	private Socket socket;
+	
 	private JTextField messageTextField = new JTextField();
 	private JButton sendButton = new JButton();
 	private JTextArea chatTextArea = new JTextArea();
+	
+	private static Scanner in; 
+	public static PrintWriter out; 
+	
+	public client(Socket s) {
+	
+		socket = s;//INSTANTIATE THE SOCKET
 		
+	}
+
+	
 	public client() {
 		
 		setTitle(TITLE);
@@ -27,30 +48,42 @@ public class client extends JFrame
 		
 		add(messageTextField);
 		add(sendButton);
-		add(chatTextArea);
 		
-		chatTextArea.setBounds(20,36,440,520);
+		chatTextArea.setEditable(false);
+		JScrollPane chatContainer = new JScrollPane(chatTextArea);
+		
+		add(chatContainer);
+		
+		chatContainer.setBounds(20,36,440,520);
 		sendButton.setBounds(370,572,90,50);
 		messageTextField.setBounds(20,572,340,50);
 		
 		sendButton.setHorizontalTextPosition(SwingConstants.CENTER);
 		sendButton.setText("Send");
 		sendButton.addActionListener(this);
-		PrintStream printStream = new PrintStream(new CustomOutputStream(chatTextArea));
-		System.setOut(printStream);
+		
+		try {
+			
+			in = new Scanner(socket.getInputStream());
+			out = new PrintWriter(socket.getOutputStream());
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//PrintStream printStream = new PrintStream(new CustomOutputStream(chatTextArea));
+		//System.setOut(printStream);
 		
 		super.getRootPane().setDefaultButton(sendButton);
 		
-		setVisible(true);	
+		setVisible(true);
 	}
-	
-	public static void main(String[] args) 
-		throws InterruptedException {
+			
+	public static String getUsername() {
 		
-		System.out.println("Starting chat client...");
-		
-		// init main frame
-		client mainFrame = new client();		
+		String username = JOptionPane.showInputDialog("Please enter login name:");
+		return username;
 	}
 	
 	public void actionPerformed(ActionEvent e) {
@@ -60,17 +93,23 @@ public class client extends JFrame
 	
 			// send message to server here when the time comes
 			
-			System.out.println(getMessage(input));
+			if (input == "/exit") {
+				// disconnect
+			}
+			
+			else {
+				System.out.println(getMessage(input));
+				messageTextField.setText("");
+			}
 		}
 	}
 	
-	String getMessage(String in) {
+	private String getMessage(String in) {
 		
 		Calendar cal = new GregorianCalendar(2015,0,31);
 		
 		cal = Calendar.getInstance();
-		Date date =  cal.getTime();
-		
+				
 		int month = cal.get(Calendar.MONTH);
 		int day = cal.get(Calendar.DAY_OF_MONTH);
 		int year = cal.get(Calendar.YEAR);
@@ -78,11 +117,37 @@ public class client extends JFrame
 		int min = cal.get(Calendar.MINUTE);
 		int sec = cal.get(Calendar.SECOND);
 		
-		
-		int i = (int) new Date().getTime();
-		in = ("[" + day + "-" + month + "-" + year + " " + hour + ":" + min + ":" + sec + "] " /*+ otherUsername + */ +": " + in);
+		in = ("[" + day + "-" + month + "-" + year + " " + hour + ":" + min + ":" + sec + "] " + user + ":   " + in);
 		
 		return in;
 	}
 
+
+	public static String getHost() {
+		String host = JOptionPane.showInputDialog("Please enter server IP:");
+		return host;
+	}
+}
+
+
+/**
+ * This class extends from OutputStream to redirect output to a JTextArrea
+ * @author www.codejava.net
+ *
+ */
+
+class CustomOutputStream extends OutputStream {
+    private JTextArea textArea;
+     
+    public CustomOutputStream(JTextArea textArea) {
+        this.textArea = textArea;
+    }
+     
+    @Override
+    public void write(int b) throws IOException {
+        // redirects data to the text area
+        textArea.append(String.valueOf((char)b));
+        // scrolls the text area to the end of data
+        textArea.setCaretPosition(textArea.getDocument().getLength());
+    }
 }
