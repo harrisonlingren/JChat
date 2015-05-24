@@ -1,4 +1,4 @@
-import java.awt.event.ActionEvent;
+/*import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -14,9 +14,9 @@ public class client extends JFrame
 	implements ActionListener, Runnable {
 
 	private static final long serialVersionUID = 4164713201071854899L;
-	private static final String TITLE = "JChat 0.1";
+	private static final String TITLE = "JChat 0.5";
 	private static final int WIDTH = 500;
-	private static final int HEIGHT = 680;
+	private static final int HEIGHT = 675;
 	
 	private static String user="";
 	
@@ -26,10 +26,7 @@ public class client extends JFrame
 	private JButton sendButton = new JButton();
 	private JTextArea chatTextArea = new JTextArea();
 	
-	private static Scanner in; 
-	public static PrintWriter out; 
-	
-	public client(Socket s) {
+	public client() {
 		
 		setTitle(TITLE);
 		setSize(WIDTH, HEIGHT);
@@ -53,15 +50,6 @@ public class client extends JFrame
 		sendButton.setText("Send");
 		sendButton.addActionListener(this);
 		
-		try {
-			
-			in = new Scanner(socket.getInputStream());
-			out = new PrintWriter(socket.getOutputStream());
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-		
 		//PrintStream printStream = new PrintStream(new CustomOutputStream(chatTextArea));
 		//System.setOut(printStream);
 		
@@ -80,14 +68,13 @@ public class client extends JFrame
 		
 		if(e.getSource()==sendButton) {
 			// send message to server here when the time comes
-			run();
+			sendMessage(getMessage(messageTextField.getText()));
 		}
 	}
 	
 	private String getMessage(String in) {
 		
 		Calendar cal = new GregorianCalendar(2015,0,31);
-		
 		cal = Calendar.getInstance();
 				
 		int month = cal.get(Calendar.MONTH);
@@ -102,10 +89,61 @@ public class client extends JFrame
 		return in;
 	}
 
-
 	public static String getHost() {
 		String host = JOptionPane.showInputDialog("Please enter server IP:");
 		return host;
+	}
+	
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		
+		try
+		{
+			Scanner chat = new Scanner(System.in);//GET THE INPUT FROM THE CMD
+			Scanner in = new Scanner(socket.getInputStream());//GET THE CLIENTS INPUT STREAM (USED TO READ DATA SENT FROM THE SERVER)
+			PrintWriter out = new PrintWriter(socket.getOutputStream());//GET THE CLIENTS OUTPUT STREAM (USED TO SEND DATA TO THE SERVER)
+			
+			while (true)//WHILE THE PROGRAM IS RUNNING
+			{						
+				String input = getMessage(messageTextField.getText());	//SET NEW VARIABLE input TO THE VALUE OF WHAT THE CLIENT TYPED IN
+								
+				out.println(input);//SEND IT TO THE SERVER
+				out.flush();//FLUSH THE STREAM
+				
+				if(in.hasNext())//IF THE SERVER SENT US SOMETHING
+					System.out.println(in.nextLine());//PRINT IT OUT
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();//MOST LIKELY WONT BE AN ERROR, GOOD PRACTICE TO CATCH THOUGH
+		} 
+	}
+}
+*/
+/**
+ * This class extends from OutputStream to redirect output to a JTextArrea
+ * @author www.codejava.net
+ *
+ */
+
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.Scanner;
+
+import javax.swing.JTextArea;
+
+public class client implements Runnable {
+
+	private Socket socket;//MAKE SOCKET INSTANCE VARIABLE
+	
+	public client(Socket s)
+	{
+		socket = s;//INSTANTIATE THE INSTANCE VARIABLE
 	}
 	
 	@Override
@@ -113,13 +151,13 @@ public class client extends JFrame
 	{
 		try
 		{
-			//Scanner chat = new Scanner(System.in);//GET THE INPUT FROM THE CMD
+			Scanner chat = new Scanner(System.in);//GET THE INPUT FROM THE CMD
 			Scanner in = new Scanner(socket.getInputStream());//GET THE CLIENTS INPUT STREAM (USED TO READ DATA SENT FROM THE SERVER)
 			PrintWriter out = new PrintWriter(socket.getOutputStream());//GET THE CLIENTS OUTPUT STREAM (USED TO SEND DATA TO THE SERVER)
 			
 			while (true)//WHILE THE PROGRAM IS RUNNING
 			{						
-				String input = getMessage(messageTextField.getText());	//SET NEW VARIABLE input TO THE VALUE OF WHAT THE CLIENT TYPED IN
+				String input = chat.nextLine();	//SET NEW VARIABLE input TO THE VALUE OF WHAT THE CLIENT TYPED IN
 				out.println(input);//SEND IT TO THE SERVER
 				out.flush();//FLUSH THE STREAM
 				
@@ -134,11 +172,8 @@ public class client extends JFrame
 	}
 }
 
-/**
- * This class extends from OutputStream to redirect output to a JTextArrea
- * @author www.codejava.net
- *
- */
+
+
 
 class CustomOutputStream extends OutputStream {
     private JTextArea textArea;

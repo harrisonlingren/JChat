@@ -1,4 +1,4 @@
-import java.io.IOException;
+/*import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -12,34 +12,36 @@ public class clientMain {
 		
 		System.out.println("Starting chat client...");
 		
-		String HOST;
-		int PORT=6677;
+		client clientBack = new client();
 		
-		HOST = client.getHost();
-		/*try {
-			Socket s = new Socket(HOST,PORT);
-			
-			
-			
-			user = client.getUsername();
-		}
-		catch (Exception noServer) {
-			client.out.println("The server might not be up at this time.");
-			System.out.println("Please try again later.");
-		}*/
+		clientBack.connect(clientBack.getHost(), 6677);
 		
+		Thread t = new Thread(clientBack);//INITIATE NEW THREAD
+		t.start();//START THREAD
+}*/
+
+import java.io.IOException;
+import java.net.Socket;
+
+import javax.swing.JOptionPane;
+
+
+public class clientMain {
+
+	private final static int PORT = 6677;//SET A CONSTANT VARIABLE PORT
+	
+	public static void main(String[] args) throws IOException
+	{
 		try 
 		{
+			String host = JOptionPane.showInputDialog("Please enter server IP:");
+			Socket s = new Socket(host, PORT);//CONNECT TO THE SERVER
 			
-			Socket s = new Socket(HOST, PORT);//CONNECT TO THE SERVER
+			System.out.println("You connected to " + host);//IF CONNECTED THEN PRINT IT OUT
 			
-			user = client.getUsername();
+			client client = new client(s);//START NEW CLIENT OBJECT
 			
-			System.out.println(user+" connected to " + HOST);//IF CONNECTED THEN PRINT IT OUT
-			
-			client clientBackend = new client(s);//START NEW CLIENT OBJECT
-			
-			Thread t = new Thread(clientBackend);//INITIATE NEW THREAD
+			Thread t = new Thread(client);//INITIATE NEW THREAD
 			t.start();//START THREAD
 			
 		} 
@@ -47,6 +49,8 @@ public class clientMain {
 		{
 			System.out.println("The server might not be up at this time.");
 			System.out.println("Please try again later.");
-		}	
+		}
 	}
 }
+
+
