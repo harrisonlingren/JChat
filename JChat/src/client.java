@@ -2,7 +2,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Calendar;
@@ -12,7 +11,7 @@ import java.util.Scanner;
 import javax.swing.*;
 
 public class client extends JFrame
-	implements ActionListener {
+	implements ActionListener, Runnable {
 
 	private static final long serialVersionUID = 4164713201071854899L;
 	private static final String TITLE = "JChat 0.1";
@@ -31,13 +30,6 @@ public class client extends JFrame
 	public static PrintWriter out; 
 	
 	public client(Socket s) {
-	
-		socket = s;//INSTANTIATE THE SOCKET
-		
-	}
-
-	
-	public client() {
 		
 		setTitle(TITLE);
 		setSize(WIDTH, HEIGHT);
@@ -46,12 +38,11 @@ public class client extends JFrame
 		// set background
 		setLayout(null);
 		
-		add(messageTextField);
-		add(sendButton);
-		
 		chatTextArea.setEditable(false);
 		JScrollPane chatContainer = new JScrollPane(chatTextArea);
 		
+		add(messageTextField);
+		add(sendButton);
 		add(chatContainer);
 		
 		chatContainer.setBounds(20,36,440,520);
@@ -66,9 +57,8 @@ public class client extends JFrame
 			
 			in = new Scanner(socket.getInputStream());
 			out = new PrintWriter(socket.getOutputStream());
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
 		
@@ -89,18 +79,8 @@ public class client extends JFrame
 	public void actionPerformed(ActionEvent e) {
 		
 		if(e.getSource()==sendButton) {
-			String input = messageTextField.getText();
-	
 			// send message to server here when the time comes
-			
-			if (input == "/exit") {
-				// disconnect
-			}
-			
-			else {
-				System.out.println(getMessage(input));
-				messageTextField.setText("");
-			}
+			run();
 		}
 	}
 	
@@ -127,8 +107,32 @@ public class client extends JFrame
 		String host = JOptionPane.showInputDialog("Please enter server IP:");
 		return host;
 	}
+	
+	@Override
+	public void run()//INHERIT THE RUN METHOD FROM THE Runnable INTERFACE
+	{
+		try
+		{
+			//Scanner chat = new Scanner(System.in);//GET THE INPUT FROM THE CMD
+			Scanner in = new Scanner(socket.getInputStream());//GET THE CLIENTS INPUT STREAM (USED TO READ DATA SENT FROM THE SERVER)
+			PrintWriter out = new PrintWriter(socket.getOutputStream());//GET THE CLIENTS OUTPUT STREAM (USED TO SEND DATA TO THE SERVER)
+			
+			while (true)//WHILE THE PROGRAM IS RUNNING
+			{						
+				String input = getMessage(messageTextField.getText());	//SET NEW VARIABLE input TO THE VALUE OF WHAT THE CLIENT TYPED IN
+				out.println(input);//SEND IT TO THE SERVER
+				out.flush();//FLUSH THE STREAM
+				
+				if(in.hasNext())//IF THE SERVER SENT US SOMETHING
+					System.out.println(in.nextLine());//PRINT IT OUT
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();//MOST LIKELY WONT BE AN ERROR, GOOD PRACTICE TO CATCH THOUGH
+		} 
+	}
 }
-
 
 /**
  * This class extends from OutputStream to redirect output to a JTextArrea
@@ -142,7 +146,7 @@ class CustomOutputStream extends OutputStream {
     public CustomOutputStream(JTextArea textArea) {
         this.textArea = textArea;
     }
-     
+
     @Override
     public void write(int b) throws IOException {
         // redirects data to the text area
