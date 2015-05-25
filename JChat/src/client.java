@@ -7,7 +7,7 @@ public class client
 
 	private Socket socket;//MAKE SOCKET INSTANCE VARIABLE
 	PrintWriter out;
-	String username="";
+	String username;
 	
 	public client(Socket s)
 	{
@@ -41,7 +41,7 @@ public class client
 			
 			new Scanner(socket.getInputStream());
 			out = new PrintWriter(socket.getOutputStream());//GET THE CLIENTS OUTPUT STREAM (USED TO SEND DATA TO THE SERVER)
-											
+			
 			out.println(msg);//SEND IT TO THE SERVER
 			out.flush();//FLUSH THE STREAM
 			

@@ -17,16 +17,15 @@ public class clientMain {
 			
 			System.out.println("You connected to " + host);//IF CONNECTED THEN PRINT IT OUT
 			
-			client client = new client(s);//START NEW CLIENT OBJECT
+			client localClient = new client(s);//START NEW CLIENT OBJECT
 			
-			Thread t = new Thread(client);//INITIATE NEW THREAD
+			Thread t = new Thread(localClient);//INITIATE NEW THREAD
 			t.start();//START THREAD
-			
+
 			@SuppressWarnings("unused")
-			clientForm mainForm = new clientForm(client);
-			
-			client.username = clientForm.getUsername();
-			
+			clientForm mainForm = new clientForm(localClient);
+			localClient.username = clientForm.getUsername();
+			localClient.out.println(localClient.username);
 		} 
 		catch (Exception noServer)//IF DIDNT CONNECT PRINT THAT THEY DIDNT
 		{
