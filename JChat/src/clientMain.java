@@ -1,25 +1,3 @@
-/*import java.io.IOException;
-import java.net.Socket;
-import java.net.UnknownHostException;
-
-
-public class clientMain {
-
-	private static String user="";
-	
-	public static void main(String[] args) 
-		throws InterruptedException, UnknownHostException, IOException {
-		
-		System.out.println("Starting chat client...");
-		
-		client clientBack = new client();
-		
-		clientBack.connect(clientBack.getHost(), 6677);
-		
-		Thread t = new Thread(clientBack);//INITIATE NEW THREAD
-		t.start();//START THREAD
-}*/
-
 import java.io.IOException;
 import java.net.Socket;
 
@@ -44,6 +22,11 @@ public class clientMain {
 			Thread t = new Thread(client);//INITIATE NEW THREAD
 			t.start();//START THREAD
 			
+			@SuppressWarnings("unused")
+			clientForm mainForm = new clientForm(client);
+			
+			client.username = clientForm.getUsername();
+			
 		} 
 		catch (Exception noServer)//IF DIDNT CONNECT PRINT THAT THEY DIDNT
 		{
@@ -52,5 +35,3 @@ public class clientMain {
 		}
 	}
 }
-
-
